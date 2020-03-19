@@ -23,7 +23,6 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *vsh;
 @property (nonatomic, copy) NSString *fsh;
 @property (nonatomic, assign) GLuint program;
-@property (nonatomic, assign, readonly) BOOL isLinked;
 @property (nonatomic, assign, readonly) BOOL isUsing;
 
 + (instancetype)programWithVSH:(NSString*)vsh FSH:(NSString*)fsh;
@@ -32,15 +31,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 - (GLuint)getUniformLocation:(const char *)uniform ;
 
-- (BOOL)link ;
-
 - (void)use ;
 @end
 
 @interface OPEnvironment : NSObject
 @property (nonatomic, copy, readonly) NSDictionary<NSString *, OPProgram*>* programs;
-
-+ (instancetype)shareInstance;
 
 - (OPProgram*)loadProgramWithVSH:(NSString*)vsh FSH:(NSString*)fsh;
 @end
@@ -48,6 +43,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface OPPainter : NSObject
 @property (nonatomic, strong) CAEAGLLayer *canvas;
 @property (nonatomic, strong, readonly) OPContext *context;
+@property (nonatomic, strong, readonly) OPEnvironment *environment;
 
 + (instancetype)painterWithCanvas:(CAEAGLLayer*)canvas;
 

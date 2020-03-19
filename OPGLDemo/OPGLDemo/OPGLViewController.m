@@ -15,6 +15,7 @@
 
 @implementation OPGLViewController {
     OPGLView *_glView;
+    OPGLView *_glView2;
 }
 
 - (void)viewDidLoad {
@@ -23,6 +24,9 @@
     
     _glView = [[OPGLView alloc] initWithFrame:CGRectMake(0, 100, self.view.frame.size.width, 300)];
     [self.view addSubview:_glView];
+    
+    _glView2 = [[OPGLView alloc] initWithFrame:CGRectMake(0, 400, self.view.frame.size.width, 300)];
+    [self.view addSubview:_glView2];
     
     UIFont *font = [UIFont fontWithName:@"Menlo" size:12 * 2];
     UIImage *wenbenImage = [self imageWithString:@"点我" font:font width:576 textAlignment:NSTextAlignmentLeft];
@@ -40,6 +44,7 @@
 
 - (void)click:(UIButton*)btn {
     [_glView setNeedsLayout];
+    [_glView2 setNeedsLayout];
 }
 
 - (UIImage *)imageWithString:(NSString *)string font:(UIFont *)font width:(CGFloat)width textAlignment:(NSTextAlignment)textAlignment {

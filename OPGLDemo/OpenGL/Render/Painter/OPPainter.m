@@ -152,7 +152,6 @@ RGBA RGBAFromCGColor(CGColorRef color)
 @end
 
 @interface OPProgram ()
-@property (nonatomic, assign, readwrite) BOOL isLinked;
 @property (nonatomic, assign, readwrite) BOOL isUsing; // 不准确，没有重置
 @end
 @implementation OPProgram
@@ -189,31 +188,9 @@ RGBA RGBAFromCGColor(CGColorRef color)
     return glGetUniformLocation(self.program, uniform);
 }
 
-- (BOOL)link {
-    if (self.isLinked) {
-        return YES;
-    }
-    //链接
-    glLinkProgram(self.program);
-    GLint linkSuccess;
-    glGetProgramiv(self.program, GL_LINK_STATUS, &linkSuccess);
-    if (linkSuccess == GL_FALSE) { //连接错误
-        GLchar messages[256];
-        glGetProgramInfoLog(self.program, sizeof(messages), 0, &messages[0]);
-        printf("OpenGL link false: %s", messages);
-    } else {
-        printf("OpenGL link success.");
-        _isLinked = YES;
-        return YES;
-    }
-    return NO;
-}
-
 - (void)use {
-    if (self.isLinked) {
-        glUseProgram(self.program);
-        _isUsing = YES;
-    }
+    glUseProgram(self.program);
+    _isUsing = YES;
 }
 @end
 
@@ -221,25 +198,22 @@ RGBA RGBAFromCGColor(CGColorRef color)
     NSMutableDictionary<NSString *, OPProgram*>* _programs;
 }
 
-+ (instancetype)shareInstance {
-    static OPEnvironment *instance;
-    static dispatch_once_t onceToken;
-    dispatch_once(&onceToken, ^{
-        instance = [OPEnvironment new];
-        instance->_programs = [NSMutableDictionary dictionary];
-    });
-    return instance;
+- (instancetype)init {
+    if (self = [super init]) {
+        _programs = [NSMutableDictionary dictionary];
+    }
+    return self;
 }
 
 - (OPProgram*)loadProgramWithVSH:(NSString*)vsh FSH:(NSString*)fsh {
     NSString *key = programKey(vsh, fsh);
     OPProgram *prog = _programs[key];
-//    if (!prog) { TODO: program复用，目前看无法复用，可能随render、frame buffer失效
+    if (!prog) { // TODO: program复用，目前看无法复用，可能随render、frame buffer失效
         prog = [OPProgram programWithVSH:vsh FSH:fsh];
         if (prog) {
             [_programs setObject:prog forKey:key];
         }
-//    }
+    }
     return prog;
 }
 
@@ -250,6 +224,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
 
 @interface OPPainter ()
 @property (nonatomic, strong, readwrite) OPContext *context;
+@property (nonatomic, strong, readwrite) OPEnvironment *environment;
 @end
 
 @implementation OPPainter {
@@ -259,16 +234,19 @@ RGBA RGBAFromCGColor(CGColorRef color)
     OPPainter *painter = [OPPainter new];
     painter.canvas = canvas;
     painter.context = [OPContext contextWithLayer:canvas];
+    painter.environment = [[OPEnvironment alloc] init];
     return painter;
 }
 
 - (BOOL)prepareBrushs {
-    [[OPEnvironment shareInstance] loadProgramWithVSH:@"default.vsh" FSH:@"default.fsh"];
-    [[OPEnvironment shareInstance] loadProgramWithVSH:@"textImage.vsh" FSH:@"textImage.fsh"];
+    [self.environment loadProgramWithVSH:@"default.vsh" FSH:@"default.fsh"];
+    [self.environment loadProgramWithVSH:@"textImage.vsh" FSH:@"textImage.fsh"];
     return YES;
 }
 
 - (void)begin {
+    // 切换EAGLContext上下文，必须paint到当前context
+    NSAssert([EAGLContext setCurrentContext:self.context.context], @"Failed to set current OpenGL context");
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
     CGFloat scale = [[UIScreen mainScreen] scale]; //获取视图放大倍数，可以把scale设置为1试试
@@ -285,7 +263,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
         return;
     }
     OPGLContext *context = (OPGLContext*)malloc(sizeof(OPGLContext));
-    [OPPainter getOPGLContext:context withVSH:@"default.vsh" FSH:@"default.fsh"];
+    [self getOPGLContext:context withVSH:@"default.vsh" FSH:@"default.fsh"];
     
     RGBA rgba = RGBAFromCGColor(color.CGColor);
     
@@ -316,7 +294,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
         return;
     }
     OPGLContext *context = (OPGLContext*)malloc(sizeof(OPGLContext));
-    [OPPainter getOPGLContext:context  withVSH:@"textImage.vsh" FSH:@"textImage.fsh"];
+    [self getOPGLContext:context withVSH:@"textImage.vsh" FSH:@"textImage.fsh"];
     
     // text
     CGFloat hWidth = self.context.layer.bounds.size.width;// layer width
@@ -364,7 +342,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
 
 - (void)paintRect:(CGRect)rect isHollow:(BOOL)hollow color:(UIColor*)color  {
     OPGLContext *context = (OPGLContext*)malloc(sizeof(OPGLContext));
-    [OPPainter getOPGLContext:context withVSH:@"default.vsh" FSH:@"default.fsh"];
+    [self getOPGLContext:context withVSH:@"default.vsh" FSH:@"default.fsh"];
     
     CGFloat hWidth = self.context.layer.bounds.size.width;// layer width
     CGFloat hHeight = self.context.layer.bounds.size.height;// layer height
@@ -387,15 +365,14 @@ RGBA RGBAFromCGColor(CGColorRef color)
     // 转化为顶点坐标
     matrixmult(transformMatrix, pointCoordinates, verticesMatrix);
     
-    opgl_drawRect(verticesMatrix, sizeof(verticesMatrix), 4, &rgba, true, context);
+    opgl_drawRect(verticesMatrix, sizeof(verticesMatrix), 4, &rgba, hollow, context);
 }
 
-+ (void)getOPGLContext:(OPGLContext*)context withVSH:(NSString*)vsh FSH:(NSString*)fsh {
-    OPProgram *useProgram = [OPEnvironment shareInstance].programs[programKey(vsh, fsh)];
+- (void)getOPGLContext:(OPGLContext*)context withVSH:(NSString*)vsh FSH:(NSString*)fsh {
+    OPProgram *useProgram = self.environment.programs[programKey(vsh, fsh)];
     if (!useProgram) {
         return;
     }
-    [useProgram link];
     [useProgram use];
     context->position = [useProgram getAttribLocation:"position"];
     context->textColor = [useProgram getAttribLocation:"sourceColor"];

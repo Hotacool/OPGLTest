@@ -43,7 +43,7 @@
     [self.painter paintLine:points isSmooth:NO color:[UIColor blackColor]];
     
     UIFont *font = [UIFont fontWithName:@"Menlo" size:12 * 2];
-    [self.painter paintText:@"左上" inRect:CGRectMake(0, 0, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
+    [self.painter paintText:@"左上" inRect:CGRectMake(0, (rand() % 100), 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
     [self.painter paintText:@"左下" inRect:CGRectMake(0, 100, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
     [self.painter paintText:@"右上" inRect:CGRectMake(100, 0, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
     [self.painter paintText:@"右下" inRect:CGRectMake(100, 100, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
