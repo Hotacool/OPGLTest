@@ -35,16 +35,20 @@
     btn.frame = CGRectMake(100, 220, 100, 50);
     [self.view addSubview:btn];
     [btn addTarget:self action:@selector(click:) forControlEvents:UIControlEventTouchUpInside];
-//    __weak typeof(self) ws = self;
-//    NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer * _Nonnull timer) {
-//        __strong typeof(ws) ss = ws;
-//        [ss click:nil];
-//    }];
+    __weak typeof(self) ws = self;
+    if (@available(iOS 10.0, *)) {
+        [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:YES block:^(NSTimer * _Nonnull timer) {
+            __strong typeof(ws) ss = ws;
+            [ss click:nil];
+        }];
+    } else {
+        // Fallback on earlier versions
+    }
 }
 
 - (void)click:(UIButton*)btn {
-    [_glView setNeedsLayout];
-    [_glView2 setNeedsLayout];
+    [_glView refresh];
+    [_glView2 refresh];
 }
 
 - (UIImage *)imageWithString:(NSString *)string font:(UIFont *)font width:(CGFloat)width textAlignment:(NSTextAlignment)textAlignment {

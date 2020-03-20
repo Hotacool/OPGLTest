@@ -28,6 +28,10 @@
 }
 
 - (void)layoutSubviews {
+    [self refresh];
+}
+
+- (void)refresh {
     [self.node setNeedsDisplay];
 }
 

@@ -11,7 +11,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface OPGLView : UIView
-
+- (void)refresh ;
 @end
 
 NS_ASSUME_NONNULL_END
