@@ -111,7 +111,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
 - (void)setup {
     self.context = [self setupContext];
     self.renderbuffer = [self setupRenderBuffer];
-    // 为颜色缓冲区 分配存储空间
+    // 为颜色缓冲区 分s配存储空间(in ios, you cannot use glRenderBufferStorage instead!)
     [self.context renderbufferStorage:GL_RENDERBUFFER fromDrawable:self.layer];
     self.framebuffer = [self setupFrameBuffer];
     // 将_colorRenderBuffer 装配到 GL_COLOR_ATTACHMENT0 这个装配点上
@@ -249,6 +249,8 @@ RGBA RGBAFromCGColor(CGColorRef color)
     NSAssert([EAGLContext setCurrentContext:self.context.context], @"Failed to set current OpenGL context");
     glClearColor(0.0, 0.0, 0.0, 0.0);
     glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glClear(GL_STENCIL_BUFFER_BIT);
     CGFloat scale = [[UIScreen mainScreen] scale]; //获取视图放大倍数，可以把scale设置为1试试
     CGRect rect = self.context.layer.bounds;
     glViewport(0, 0, rect.size.width * scale, rect.size.height * scale); //设置视口大小
@@ -287,6 +289,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
     }
 
     opgl_drawLine(values, sizeof(values), unit, 0, context);
+    free(context);
 }
 
 - (void)paintText:(NSString*)text inRect:(CGRect)rect font:(UIFont *)font color:(UIColor *)color alignment:(NSTextAlignment)alignment {
@@ -338,6 +341,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
     opgl_drawImage(verticesMatrix, sizeof(verticesMatrix), brushData, (GLsizei)width, (GLsizei)height, context);
     
     free(brushData);
+    free(context);
 }
 
 - (void)paintRect:(CGRect)rect isHollow:(BOOL)hollow color:(UIColor*)color  {
@@ -366,6 +370,8 @@ RGBA RGBAFromCGColor(CGColorRef color)
     matrixmult(transformMatrix, pointCoordinates, verticesMatrix);
     
     opgl_drawRect(verticesMatrix, sizeof(verticesMatrix), 4, &rgba, hollow, context);
+    
+    free(context);
 }
 
 - (void)getOPGLContext:(OPGLContext*)context withVSH:(NSString*)vsh FSH:(NSString*)fsh {

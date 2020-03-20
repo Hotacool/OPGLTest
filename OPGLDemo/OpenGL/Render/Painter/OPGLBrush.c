@@ -168,4 +168,7 @@ void opgl_drawImage(const GLvoid* data, GLsizeiptr size, GLubyte *imageData, GLs
     glEnableVertexAttribArray(context->inputTextureCoordinate);
     
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    
+    glDeleteTextures(1, &texId);
+    glDeleteBuffers(1, &vertexBuffer);
 }
