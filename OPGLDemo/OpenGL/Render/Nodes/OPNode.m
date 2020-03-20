@@ -47,10 +47,10 @@
     [self.painter paintText:@"左下" inRect:CGRectMake(0, 100, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
     [self.painter paintText:@"右上" inRect:CGRectMake(100, 0, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
     [self.painter paintText:@"右下" inRect:CGRectMake(100, 100, 100, 100) font:font color:[UIColor redColor] alignment:NSTextAlignmentRight];
-    
+//
     [self.painter paintRect:CGRectMake(0, 0, 80, 80) isHollow:NO color:[UIColor darkGrayColor]];
     [self.painter paintRect:CGRectMake(100, 100, 80, 80) isHollow:NO color:[UIColor redColor]];
-    [self.painter paintRect:CGRectMake(0, 0, self.hostLayer.bounds.size.width, self.hostLayer.bounds.size.height) isHollow:NO color:[UIColor redColor]];
+    [self.painter paintRect:CGRectMake(0, 0, self.hostLayer.bounds.size.width, self.hostLayer.bounds.size.height) isHollow:YES color:[UIColor redColor]];
     [self.painter end];
 }
 
