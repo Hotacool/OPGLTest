@@ -7,8 +7,26 @@
 //
 
 #import <Foundation/Foundation.h>
+#include "types.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
+typedef struct
+{
+    CGPoint high;
+    CGPoint low;
+    CGRect rect;
+    RGBA rgba;
+}
+OPCandle ;
+
+RGBA RGBAFromCGColor(CGColorRef color);
+
+static inline OPCandle OPCandleMake(CGPoint high, CGPoint low, CGRect rect, UIColor *color )
+{
+    return (OPCandle){.high = high, .low = low, .rect = rect, .rgba = RGBAFromCGColor(color.CGColor)};
+}
+
 
 @interface OPContext : NSObject
 @property (nonatomic, strong) EAGLContext *context;
@@ -58,6 +76,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)paintText:(NSString*)text inRect:(CGRect)rect font:(UIFont *)font color:(UIColor *)color alignment:(NSTextAlignment)alignment ;
 
 - (void)paintRect:(CGRect)rect isHollow:(BOOL)hollow color:(UIColor*)color ;
+
+- (void)paintCandles:(OPCandle *)candles size:(size_t)size isHollow:(BOOL)hollow color:(UIColor*)color ;
 @end
 
 NS_ASSUME_NONNULL_END

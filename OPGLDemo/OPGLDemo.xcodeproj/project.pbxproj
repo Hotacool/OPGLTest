@@ -55,6 +55,7 @@
 		6D6C3C1C24222AF7001C5457 /* OPGLDemo.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = OPGLDemo.pch; sourceTree = "<group>"; };
 		6D6C3C1D24222B95001C5457 /* OPGLViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OPGLViewController.m; sourceTree = "<group>"; };
 		6D6C3C1E24222B95001C5457 /* OPGLViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OPGLViewController.h; sourceTree = "<group>"; };
+		6DA575432429D6F700DA4DD9 /* types.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = types.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -152,6 +153,7 @@
 				6D6C3C0824222A7C001C5457 /* fileUtil.m */,
 				6D6C3C0724222A7C001C5457 /* shaderUtil.h */,
 				6D6C3C0924222A7C001C5457 /* shaderUtil.c */,
+				6DA575432429D6F700DA4DD9 /* types.h */,
 			);
 			path = Utils;
 			sourceTree = "<group>";

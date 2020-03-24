@@ -35,7 +35,7 @@ void opgl_drawLine(const GLvoid* data, GLsizeiptr size, GLint unit, RGBA *color,
     
     glEnableVertexAttribArray(context->position);
     
-    // 取出Colors数组中的每个坐标点的颜色值，赋给_colorSlot ???
+    // 取出Colors数组中的每个坐标点的颜色值
     glVertexAttribPointer(context->textColor, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * unit, (float *)NULL + 3);
     
     glEnableVertexAttribArray(context->textColor);
@@ -171,4 +171,56 @@ void opgl_drawImage(const GLvoid* data, GLsizeiptr size, GLubyte *imageData, GLs
     
     glDeleteTextures(1, &texId);
     glDeleteBuffers(1, &vertexBuffer);
+}
+
+void opgl_drawCandles(const GLvoid* data, GLsizeiptr size, GLint unit, OPGLContext *context) {
+    // 2. 使用vbo
+    GLuint vertexBuffer;
+    // 生成buffer
+    glGenBuffers(1, &vertexBuffer);
+    // 绑定vertexBuffer到GL_ARRAY_BUFFER目标，生成后绑定才能进行后续
+    glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+    // 为VBO申请空间，初始化并设置顶点数据的值
+    glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW);
+    
+    // 给_positionSlot传递vertices数据
+    glVertexAttribPointer(context->position, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * unit, (void *)0);
+    glEnableVertexAttribArray(context->position);
+    
+    // 取出Colors数组中的每个坐标点的颜色值
+    glVertexAttribPointer(context->textColor, 4, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * unit, (float *)NULL + 2);
+    glEnableVertexAttribArray(context->textColor);
+    
+    glLineWidth(1);
+    
+    const int rSize = 4 + 4;
+    int candleCount = (int)size / (sizeof(GLfloat) * rSize * unit);
+    // TODO: 索引缓存
+    int8_t triSize = 3;
+    int8_t triCount = 2;// 每个矩形由2个三角形组成
+    int8_t lineSize = 2;
+    int8_t lineCount = 2;// 上下两条线
+    GLubyte rectIndice[candleCount * triSize * triCount];// 索引数组，指定好了绘制三角形的方式
+    GLubyte lineIndice[candleCount * lineSize * lineCount];// 索引数组，指定好了绘制线的方式
+    for (int i = 0; i < candleCount; i++) {
+        rectIndice[i * triSize * triCount] = 0 + i * rSize;
+        rectIndice[i * triSize * triCount + 1] = 1 + i * rSize;
+        rectIndice[i * triSize * triCount + 2] = 2 + i * rSize;
+        
+        rectIndice[i * triSize * triCount + 3] = 0 + i * rSize;
+        rectIndice[i * triSize * triCount + 4] = 2 + i * rSize;
+        rectIndice[i * triSize * triCount + 5] = 3 + i * rSize;
+        
+        lineIndice[i * lineSize * lineCount] = 4 + i * rSize;
+        lineIndice[i * lineSize * lineCount + 1] = 5 + i * rSize;
+        
+        lineIndice[i * lineSize * lineCount + 2] = 6 + i * rSize;
+        lineIndice[i * lineSize * lineCount + 3] = 7 + i * rSize;
+    }
+    
+    glDrawElements(GL_LINES, (int)sizeof(lineIndice)/sizeof(lineIndice[0]), GL_UNSIGNED_BYTE, lineIndice);
+    
+    glDrawElements(GL_TRIANGLES, (int)sizeof(rectIndice)/sizeof(rectIndice[0]), GL_UNSIGNED_BYTE, rectIndice);
+    
+    glDeleteBuffers(1, &vertexBuffer);// 及时清除VBO缓存
 }

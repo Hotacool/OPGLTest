@@ -208,7 +208,7 @@ RGBA RGBAFromCGColor(CGColorRef color)
 - (OPProgram*)loadProgramWithVSH:(NSString*)vsh FSH:(NSString*)fsh {
     NSString *key = programKey(vsh, fsh);
     OPProgram *prog = _programs[key];
-    if (!prog) { // TODO: program复用，目前看无法复用，可能随render、frame buffer失效
+    if (!prog) { // program复用
         prog = [OPProgram programWithVSH:vsh FSH:fsh];
         if (prog) {
             [_programs setObject:prog forKey:key];
@@ -352,8 +352,8 @@ RGBA RGBAFromCGColor(CGColorRef color)
     CGFloat hHeight = self.context.layer.bounds.size.height;// layer height
     float originX = rect.origin.x / hWidth;
     float originY = rect.origin.y / hHeight;
-    float w = rect.size.width / hWidth;
-    float h = rect.size.height / hHeight;
+    float w = rect.size.width / hWidth * 2;
+    float h = rect.size.height / hHeight * 2;
     // 顶点坐标
     float verticesMatrix[4][4];
     // 转换为ST坐标
@@ -370,6 +370,91 @@ RGBA RGBAFromCGColor(CGColorRef color)
     matrixmult(transformMatrix, pointCoordinates, verticesMatrix);
     
     opgl_drawRect(verticesMatrix, sizeof(verticesMatrix), 4, &rgba, hollow, context);
+    
+    free(context);
+}
+
+- (void)paintCandles:(OPCandle *)candles size:(size_t)size isHollow:(BOOL)hollow color:(UIColor*)color  {
+    OPGLContext *context = (OPGLContext*)malloc(sizeof(OPGLContext));
+    [self getOPGLContext:context withVSH:@"default.vsh" FSH:@"default.fsh"];
+    
+    CGFloat hWidth = self.context.layer.bounds.size.width;// layer width
+    CGFloat hHeight = self.context.layer.bounds.size.height;// layer height
+    
+    int unit = 6; // 每个点大小
+    int rSize = 4 + 4; // 每个candle由2条线（4个顶点）+ 1个矩形（4个顶点）组成
+    GLfloat values[size * rSize * unit];
+    // 坐标变换：iOS坐标系转OpenGL顶点坐标
+    for (int i = 0; i < size; i++) {
+        CGRect rect = candles[i].rect;
+        RGBA rgba = candles[i].rgba;
+        CGPoint high = candles[i].high;
+        CGPoint low = candles[i].low;
+        CGPoint hV = CGPointMake((high.x / hWidth - 0.5) * 2, -(high.y / hHeight - 0.5) * 2);
+        CGPoint lV = CGPointMake((low.x / hWidth - 0.5) * 2, -(low.y / hHeight - 0.5) * 2);
+        
+        float w = rect.size.width / hWidth * 2;
+        float h = rect.size.height / hHeight * 2;
+        CGPoint p = rect.origin;
+        CGPoint pV = CGPointMake((p.x / hWidth - 0.5) * 2, -(p.y / hHeight - 0.5) * 2);
+        values[i * unit * rSize] = pV.x; // 左下
+        values[i * unit * rSize + 1] = pV.y + h;
+        values[i * unit * rSize + 2] = rgba.r;
+        values[i * unit * rSize + 3] = rgba.g;
+        values[i * unit * rSize + 4] = rgba.b;
+        values[i * unit * rSize + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 1] = pV.x; // 左上
+        values[i * unit * rSize + unit * 1 + 1] = pV.y;
+        values[i * unit * rSize + unit * 1 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 1 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 1 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 1 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 2] = pV.x + w; // 右上
+        values[i * unit * rSize + unit * 2 + 1] = pV.y;
+        values[i * unit * rSize + unit * 2 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 2 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 2 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 2 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 3] = pV.x + w;  // 右下
+        values[i * unit * rSize + unit * 3 + 1] = pV.y + h;
+        values[i * unit * rSize + unit * 3 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 3 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 3 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 3 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 4] = hV.x;  // 高1
+        values[i * unit * rSize + unit * 4 + 1] = hV.y;
+        values[i * unit * rSize + unit * 4 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 4 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 4 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 4 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 5] = hV.x;  // 高2
+        values[i * unit * rSize + unit * 5 + 1] = pV.y;
+        values[i * unit * rSize + unit * 5 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 5 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 5 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 5 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 6] = lV.x;  // 低1
+        values[i * unit * rSize + unit * 6 + 1] = lV.y;
+        values[i * unit * rSize + unit * 6 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 6 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 6 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 6 + 5] = rgba.a;
+        
+        values[i * unit * rSize + unit * 7] = lV.x;  // 低2
+        values[i * unit * rSize + unit * 7 + 1] = pV.y + h;
+        values[i * unit * rSize + unit * 7 + 2] = rgba.r;
+        values[i * unit * rSize + unit * 7 + 3] = rgba.g;
+        values[i * unit * rSize + unit * 7 + 4] = rgba.b;
+        values[i * unit * rSize + unit * 7 + 5] = rgba.a;
+    }
+    
+    opgl_drawCandles(values, sizeof(values), unit, context);
     
     free(context);
 }

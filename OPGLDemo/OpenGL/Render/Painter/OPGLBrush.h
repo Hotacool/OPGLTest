@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <OpenGLES/ES2/gl.h>
+#include "types.h"
 
 // shader attributes 索引
 typedef struct {
@@ -19,15 +20,6 @@ typedef struct {
     GLuint inputTextureCoordinate;
     GLuint inputImageTexture;
 } OPGLContext;
-
-typedef struct
-{
-  float r;  // Red component (0 <= r <= 1)
-  float g;  // Green component (0 <= g <= 1)
-  float b;  // Blue component (0 <= b <= 1)
-  float a;  // Alpha/opacity component (0 <= a <= 1)
-}
-RGBA;
 
 /// 画线
 /// @param data 顶点数据
@@ -54,4 +46,6 @@ extern void opgl_drawRect(const GLvoid* data, GLsizeiptr size, GLint unit, RGBA 
 /// @param height 图片高度
 /// @param context shader attributes 索引
 extern void opgl_drawImage(const GLvoid* data, GLsizeiptr size, GLubyte *imageData, GLsizei width, GLsizei height, OPGLContext *context) ;
+
+void opgl_drawCandles(const GLvoid* data, GLsizeiptr size, GLint unit, OPGLContext *context) ;
 #endif /* OPGLBrush_h */
