@@ -200,8 +200,8 @@ void opgl_drawCandles(const GLvoid* data, GLsizeiptr size, GLint unit, OPGLConte
     int8_t triCount = 2;// 每个矩形由2个三角形组成
     int8_t lineSize = 2;
     int8_t lineCount = 2;// 上下两条线
-    GLubyte rectIndice[candleCount * triSize * triCount];// 索引数组，指定好了绘制三角形的方式
-    GLubyte lineIndice[candleCount * lineSize * lineCount];// 索引数组，指定好了绘制线的方式
+    GLuint rectIndice[candleCount * triSize * triCount];// 索引数组，指定好了绘制三角形的方式
+    GLuint lineIndice[candleCount * lineSize * lineCount];// 索引数组，指定好了绘制线的方式
     for (int i = 0; i < candleCount; i++) {
         rectIndice[i * triSize * triCount] = 0 + i * rSize;
         rectIndice[i * triSize * triCount + 1] = 1 + i * rSize;
@@ -218,9 +218,9 @@ void opgl_drawCandles(const GLvoid* data, GLsizeiptr size, GLint unit, OPGLConte
         lineIndice[i * lineSize * lineCount + 3] = 7 + i * rSize;
     }
     
-    glDrawElements(GL_LINES, (int)sizeof(lineIndice)/sizeof(lineIndice[0]), GL_UNSIGNED_BYTE, lineIndice);
+    glDrawElements(GL_LINES, (int)sizeof(lineIndice)/sizeof(lineIndice[0]), GL_UNSIGNED_INT, lineIndice);
     
-    glDrawElements(GL_TRIANGLES, (int)sizeof(rectIndice)/sizeof(rectIndice[0]), GL_UNSIGNED_BYTE, rectIndice);
+    glDrawElements(GL_TRIANGLES, (int)sizeof(rectIndice)/sizeof(rectIndice[0]), GL_UNSIGNED_INT, rectIndice);
     
     glDeleteBuffers(1, &vertexBuffer);// 及时清除VBO缓存
 }
