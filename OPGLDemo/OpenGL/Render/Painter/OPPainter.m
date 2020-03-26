@@ -352,8 +352,8 @@ RGBA RGBAFromCGColor(CGColorRef color)
     CGFloat hHeight = self.context.layer.bounds.size.height;// layer height
     float originX = rect.origin.x / hWidth;
     float originY = rect.origin.y / hHeight;
-    float w = rect.size.width / hWidth * 2;
-    float h = rect.size.height / hHeight * 2;
+    float w = rect.size.width / hWidth;
+    float h = rect.size.height / hHeight;
     // 顶点坐标
     float verticesMatrix[4][4];
     // 转换为ST坐标
@@ -397,29 +397,29 @@ RGBA RGBAFromCGColor(CGColorRef color)
         float h = rect.size.height / hHeight * 2;
         CGPoint p = rect.origin;
         CGPoint pV = CGPointMake((p.x / hWidth - 0.5) * 2, -(p.y / hHeight - 0.5) * 2);
-        values[i * unit * rSize] = pV.x; // 左下
-        values[i * unit * rSize + 1] = pV.y + h;
+        values[i * unit * rSize] = pV.x; //  左上
+        values[i * unit * rSize + 1] = pV.y;
         values[i * unit * rSize + 2] = rgba.r;
         values[i * unit * rSize + 3] = rgba.g;
         values[i * unit * rSize + 4] = rgba.b;
         values[i * unit * rSize + 5] = rgba.a;
         
-        values[i * unit * rSize + unit * 1] = pV.x; // 左上
-        values[i * unit * rSize + unit * 1 + 1] = pV.y;
+        values[i * unit * rSize + unit * 1] = pV.x; //  左下
+        values[i * unit * rSize + unit * 1 + 1] = pV.y - h;
         values[i * unit * rSize + unit * 1 + 2] = rgba.r;
         values[i * unit * rSize + unit * 1 + 3] = rgba.g;
         values[i * unit * rSize + unit * 1 + 4] = rgba.b;
         values[i * unit * rSize + unit * 1 + 5] = rgba.a;
         
-        values[i * unit * rSize + unit * 2] = pV.x + w; // 右上
-        values[i * unit * rSize + unit * 2 + 1] = pV.y;
+        values[i * unit * rSize + unit * 2] = pV.x + w; //  右下
+        values[i * unit * rSize + unit * 2 + 1] = pV.y - h;
         values[i * unit * rSize + unit * 2 + 2] = rgba.r;
         values[i * unit * rSize + unit * 2 + 3] = rgba.g;
         values[i * unit * rSize + unit * 2 + 4] = rgba.b;
         values[i * unit * rSize + unit * 2 + 5] = rgba.a;
         
-        values[i * unit * rSize + unit * 3] = pV.x + w;  // 右下
-        values[i * unit * rSize + unit * 3 + 1] = pV.y + h;
+        values[i * unit * rSize + unit * 3] = pV.x + w;  //  右上
+        values[i * unit * rSize + unit * 3 + 1] = pV.y;
         values[i * unit * rSize + unit * 3 + 2] = rgba.r;
         values[i * unit * rSize + unit * 3 + 3] = rgba.g;
         values[i * unit * rSize + unit * 3 + 4] = rgba.b;

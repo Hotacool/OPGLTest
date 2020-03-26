@@ -32,11 +32,13 @@
 - (void)setNeedsDisplay {
     [self.painter begin];
     // 蜡烛图
+    CGFloat height = self.hostLayer.bounds.size.height;
+    CGFloat width = self.hostLayer.bounds.size.width;
     OPCandle value[4] = {
-        OPCandleMake(CGPointMake(10, 0), CGPointMake(10, 80), CGRectMake(0, 60, 20, 40), [UIColor blueColor]),
-        OPCandleMake(CGPointMake(40, 10), CGPointMake(40, 80), CGRectMake(30, 40, 20, 20), [UIColor redColor]),
+        OPCandleMake(CGPointMake(10, 0), CGPointMake(10, 80), CGRectMake(0, 0, 20, height/2), [UIColor blueColor]),
+        OPCandleMake(CGPointMake(40, 10), CGPointMake(40, 80), CGRectMake(30, height/2, 20, height/2), [UIColor redColor]),
         OPCandleMake(CGPointMake(70, 20), CGPointMake(70, 80), CGRectMake(60, 80, 20, 50), [UIColor greenColor]),
-        OPCandleMake(CGPointMake(100, 20), CGPointMake(100, 80), CGRectMake(90, 80, 20, 10), [UIColor blueColor]),
+        OPCandleMake(CGPointMake(width - 20, 20), CGPointMake(width - 20, 80), CGRectMake(width - 40, 80, 40, 10), [UIColor blueColor]),
     };
     [self.painter paintCandles:value size:sizeof(value) / sizeof(OPCandle) isHollow:NO color:[UIColor blueColor]];
     // 折线
